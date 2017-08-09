@@ -1,0 +1,3 @@
+docker run -d -p 2181:2181 -p 2888:2888 -p 3888:3888 --name zookeeper zookeeper 
+
+docker run -d -p 9092:9092 --name kafka --link zookeeper confluent/kafka
