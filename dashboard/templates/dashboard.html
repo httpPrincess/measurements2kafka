@@ -7,7 +7,6 @@
 </head>
 <body>
 <h1>Dashboard</h1>
-<h2>Current status</h2>
 <div id="tester" style="width:600px;height:250px;"></div>
 <script>
 function updateData() {
@@ -15,66 +14,32 @@ function updateData() {
    d3.json(url, function(error, data) {
       layout = { margin: { t: 0 } };
       TESTER = document.getElementById('tester');
-
+      
       Plotly.newPlot(TESTER, [data], layout);
 
       TESTER.on('plotly_click', function(data){
          form = document.getElementById('correction');
          form["x"].value=data.points[0].x;
          form["y"].value=data.points[0].y;
+         <!--console.log(data.points[0].x, data.points[0].y);-->
+
       });
 
-      options = document.getElementById('options');
-      for (i=0; i < data.times.length; i += 1) {
-           var t = new Date( data.times[i] );
-
-           <!--toISOString();-->
-
-           option = document.createElement('option');
-           option.setAttribute('value', data.times[i]);
-           option.appendChild(document.createTextNode(t));
-           options.appendChild(option);
-       }
-   });
+});
 }
 
 updateData();
 
-<!--setInterval(function() {updateData(); }, 5000); -->
-
+setInterval(function() {
+                updateData();
+        }, 5000); 
 </script>
-<h2>Corrections</h2>
+
 <form id="correction" method="post" action="{{ url_for('put_data') }}">
     <input name="x">
     <input name="y">
     <input type="submit" value="send"/>
 </form>
 
-<h2>Historic plots</h2>
-<form>
-    <select id="options" onchange="updateHistoricData()">
-    </select>
-</form>
-
-
-<div id="histo" style="width:600px;height:250px;"></div>
-
-<script>
-function updateHistoricData() {
-   var ts = document.getElementById('options').value;
-   var url = '{{ url_for('get_data') }}'+ts;
-   console.log(ts);
-   console.log(url);
-   d3.json(url, function(error, data) {
-      layout = { margin: { t: 0 } };
-      PLT = document.getElementById('histo');
-
-      Plotly.newPlot(PLT, [data], layout);
-
-});
-}
-
-updateHistoricData();
-</script>
 
 </body>
