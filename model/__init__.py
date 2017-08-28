@@ -22,7 +22,7 @@ def generate_timestamp():
 ORIGIN = Event('jj', generate_timestamp(), 0, 2.5)
 
 
-def generate_event(previous_event):
+def generate_event(previous_event=ORIGIN):
     x = previous_event.x + 1
     return Event(
         generate_name(),

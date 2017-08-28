@@ -30,7 +30,6 @@ def put_data():
     x = int(request.form['x'])
     y = float(request.form['y'])
 
-    print 'Got %d and %f' % (x, y)
     update_values(x, y)
     return redirect(url_for('index'))
 
@@ -48,7 +47,6 @@ def get_data(ts=0):
     if ts != 0:
         past_events = filter(lambda a: a.ts < ts, past_events)
 
-    print('Events so far: %r' % past_events)
     entity = apply_events(past_events)
 
     # just for fun, by each retrieval we add a new Event
