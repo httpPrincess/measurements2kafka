@@ -3,7 +3,7 @@ from flask_bootstrap import Bootstrap
 import sys
 
 sys.path.append('../')
-from model.eventstore import store_events, find_events
+from model.kafkaeventstore import store_events, find_events
 from model import Event, ORIGIN, generate_timestamp, generate_event, apply_events
 
 app = Flask(__name__)
