@@ -1,8 +1,9 @@
 from collections import namedtuple
-from .eventstore import find_events, store_events
-from time import time
 from math import sqrt
 from random import choice, random, uniform
+from time import time
+
+from .eventstore import find_events, store_events
 
 Event = namedtuple('Event', ['author', 'ts', 'x', 'y'])
 
@@ -34,7 +35,7 @@ def generate_event(previous_event=ORIGIN):
 
 def avg(aggregate):
     y = 0.0
-    if len(aggregate) == 0:
+    if not aggregate:
         return y
 
     for ev in aggregate:

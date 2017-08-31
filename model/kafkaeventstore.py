@@ -1,8 +1,6 @@
-from collections import defaultdict
-from kafka import KafkaConsumer, KafkaProducer, TopicPartition
 import json
 import struct
-
+from kafka import KafkaConsumer, KafkaProducer, TopicPartition
 from model import Event
 
 TOPIC = 'measurements'
@@ -36,3 +34,7 @@ def store_events(entity_id, events):
     for e in events:
         producer.send(TOPIC, key=entity_id, value=e)
     producer.flush()
+
+
+def initialize_store(entity_id, origin):
+    store_events(entity_id, [origin])
