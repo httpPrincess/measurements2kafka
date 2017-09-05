@@ -45,7 +45,6 @@ def get_data(ts=0):
     past_events = find_events(ENTITY_ID)
     # if ts available filter
     if ts != 0:
-        # past_events = filter(lambda a: a.ts < ts, past_events)
         past_events = [e for e in past_events if e.ts < ts]
 
     entity = apply_events(past_events)

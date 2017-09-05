@@ -1,0 +1,13 @@
+zookeeper:
+  image: zookeeper
+kafka:
+  image: confluent/kafka
+  links:
+     - zookeeper
+dashboard:
+  build: .
+  ports:
+    - 8080:8080
+  links:
+    - kafka
+    - zookeeper
