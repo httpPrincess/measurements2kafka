@@ -58,6 +58,6 @@ def workflow():
 
     item = apply_events(past_events)
     a = avg(item)
-
+    assert a
     # newEvents = process_command(item, 'something')
     # store_events(newEvents)

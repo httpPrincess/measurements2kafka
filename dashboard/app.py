@@ -25,6 +25,11 @@ def get_times():
     return [e.ts for e in past_events]
 
 
+def get_authors():
+    past_events = find_events(ENTITY_ID)
+    return list({e.author for e in past_events})
+
+
 @app.before_first_request
 def setup():
     initialize_store(ENTITY_ID, ORIGIN)
@@ -55,7 +60,26 @@ def get_data(ts=0):
         store_single_event(new_event)
 
     # transformation for plotting
-    return jsonify({'x': [x for x, y in entity.items()], 'y': [y for x, y in entity.items()], 'times': get_times()})
+    return jsonify(
+        {
+            'data': {
+                'x': [x for x, y in entity.items()],
+                'y': [y for x, y in entity.items()]
+            },
+            'times': get_times(),
+            'authors': get_authors()
+        })
+
+
+@app.route('/authors/', methods=['GET'])
+@app.route('/authors/<author>', methods=['GET'])
+def get_data_by_author(author=ORIGIN.author):
+    past_events = find_events(ENTITY_ID)
+    entity = apply_events([e for e in past_events if e.author == author])
+
+    return jsonify({'x': [x for x, y in entity.items()],
+                    'y': [y for x, y in entity.items()]
+                    })
 
 
 @app.route('/', methods=['GET'])

@@ -13,11 +13,13 @@ def deserializer(key):
     except:
         return 0
 
+
 def get_address():
     import os
-    server = os.getenv('KAFKA_PORT_9092_TCP_ADDR','localhost')
+    server = os.getenv('KAFKA_PORT_9092_TCP_ADDR', 'localhost')
     port = os.getenv('KAFKA_PORT_9092_TCP_PORT', '9092')
-    return server+':'+port
+    return server + ':' + port
+
 
 def find_events(entity_id):
     # group_id = 'dashboards', client_id = 'me',

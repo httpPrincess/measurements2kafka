@@ -30,7 +30,7 @@
           layout = { margin: { t: 0 } };
           TESTER = document.getElementById('tester');
 
-          Plotly.newPlot(TESTER, [data], layout);
+          Plotly.newPlot(TESTER, [data.data], layout);
 
           TESTER.on('plotly_click', function(data){
              form = document.getElementById('correction');
@@ -46,6 +46,15 @@
                option.appendChild(document.createTextNode(t));
                options.appendChild(option);
            }
+
+          authors = document.getElementById('authors');
+          for (i=0; i< data.authors.length; i+=1 ) {
+               option = document.createElement('option');
+               author = data.authors[i];
+               option.setAttribute('value', author);
+               option.appendChild(document.createTextNode(author));
+               authors.appendChild(option);
+          }
        });
     }
 
@@ -73,18 +82,37 @@
     function updateHistoricData() {
        var ts = document.getElementById('options').value;
        var url = '{{ url_for('get_data') }}'+ts;
-       console.log(ts);
-       console.log(url);
+
        d3.json(url, function(error, data) {
           layout = { margin: { t: 0 } };
           PLT = document.getElementById('histo');
 
-          Plotly.newPlot(PLT, [data], layout);
+          Plotly.newPlot(PLT, [data.data], layout);
 
     });
     }
 
     updateHistoricData();
+    </script>
+
+    <h2>Author plots</h2>
+    <form>
+        <select id="authors" onchange="updateUserPlot()" ></select>
+    </form>
+
+    <div id="userplot" style="width:600px;height:250px;"></div>
+
+    <script>
+        function updateUserPlot() {
+           var author = document.getElementById('authors').value;
+           var url = '{{ url_for('get_data_by_author') }}'+author;
+
+           d3.json(url, function(error, data) {
+              layout = { margin: {t: 0}};
+              PLT = document.getElementById('userplot');
+              Plotly.newPlot(PLT, [data], layout);
+           });
+        }
     </script>
 
     </div>
