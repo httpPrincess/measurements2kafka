@@ -77,9 +77,10 @@ def get_data_by_author(author=ORIGIN.author):
     past_events = find_events(ENTITY_ID)
     entity = apply_events([e for e in past_events if e.author == author])
 
-    return jsonify({'x': [x for x, y in entity.items()],
-                    'y': [y for x, y in entity.items()]
-                    })
+    return jsonify(
+        {'x': [x for x, y in entity.items()],
+         'y': [y for x, y in entity.items()]
+         })
 
 
 @app.route('/', methods=['GET'])

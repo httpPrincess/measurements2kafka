@@ -7,6 +7,7 @@ RUN DBEIAN_FRONTEND=noninteractive apt-get update && \
    apt-get autoremove && \
    rm -rf /var/lib/{apt,dpkg,cache,log}
 RUN mkdir /app/
+VOLUME /app/
 ADD . /app/
 RUN pip install -r /app/requirements.txt
 WORKDIR /app/dashboard/

@@ -22,12 +22,22 @@
 <div class="container">
 <h1>Dashboard</h1>
     <h2>Current status</h2>
-    <div id="tester" style="width:600px;height:250px;"></div>
+    <div id="tester" style="width:1200px;height:350px;"></div>
     <script>
     function updateData() {
        var url = '{{ url_for('get_data') }}';
        d3.json(url, function(error, data) {
-          layout = { margin: { t: 0 } };
+          layout = layout = { margin: { t: 50 },
+                     title: 'Current plot',
+                     xaxis: {
+                        title: 'Time',
+                        zeroline: true
+                     },
+                     yaxis: {
+                        title: 'Value',
+                        zeroline: false
+                        }
+                   };;
           TESTER = document.getElementById('tester');
 
           Plotly.newPlot(TESTER, [data.data], layout);
@@ -69,14 +79,28 @@
             <input type="submit" value="send"/>
         </form>
 
-    <h2>Historic plots</h2>
-    <form>
-        <select id="options" onchange="updateHistoricData()">
-        </select>
-    </form>
 
 
-    <div id="histo" style="width:600px;height:250px;"></div>
+        <h2>Alternative plots</h2>
+
+
+
+    <div style="width: 1300px; overflow: hidden">
+        <div style="float: left">
+            <form>
+                <label for="options">Select time:</label>
+             <select id="options" onchange="updateHistoricData()"></select>
+            </form>
+            <div id="histo" style="width:600px;height:250px"></div>
+        </div>
+        <div style="float: left">
+            <form>
+                <label for="authors">Select user:</label>
+                <select id="authors" onchange="updateUserPlot()" ></select>
+            </form>
+            <div id="userplot" style="width:600px;height:250px"></div>
+        <div>
+    </div>
 
     <script>
     function updateHistoricData() {
@@ -84,35 +108,44 @@
        var url = '{{ url_for('get_data') }}'+ts;
 
        d3.json(url, function(error, data) {
-          layout = { margin: { t: 0 } };
+          layout = { margin: { t: 50 },
+                     title: 'Historic plot ('+ts+')',
+                     xaxis: {
+                        title: 'Time',
+                        zeroline: true
+                     },
+                     yaxis: {
+                        title: 'Value',
+                        zeroline: false
+                        }
+                   };
           PLT = document.getElementById('histo');
 
           Plotly.newPlot(PLT, [data.data], layout);
-
     });
     }
 
-    updateHistoricData();
-    </script>
 
-    <h2>Author plots</h2>
-    <form>
-        <select id="authors" onchange="updateUserPlot()" ></select>
-    </form>
+    function updateUserPlot() {
+       var author = document.getElementById('authors').value;
+       var url = '{{ url_for('get_data_by_author') }}'+author;
 
-    <div id="userplot" style="width:600px;height:250px;"></div>
-
-    <script>
-        function updateUserPlot() {
-           var author = document.getElementById('authors').value;
-           var url = '{{ url_for('get_data_by_author') }}'+author;
-
-           d3.json(url, function(error, data) {
-              layout = { margin: {t: 0}};
-              PLT = document.getElementById('userplot');
-              Plotly.newPlot(PLT, [data], layout);
-           });
-        }
+       d3.json(url, function(error, data) {
+          layout = { margin: { t: 50 },
+                 title: 'Measurements made by: '+author,
+                 xaxis: {
+                    title: 'Time',
+                    zeroline: true
+                 },
+                 yaxis: {
+                    title: 'Value',
+                    zeroline: false
+                    }
+               };
+          PLT = document.getElementById('userplot');
+          Plotly.newPlot(PLT, [data], layout);
+       });
+    }
     </script>
 
     </div>
