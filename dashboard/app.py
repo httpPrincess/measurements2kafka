@@ -25,6 +25,16 @@ def get_times():
     return [e.ts for e in past_events]
 
 
+def split_data(entity):
+    retx = list()
+    rety = list()
+    for x, y in sorted(entity.items()):
+        retx.append(x)
+        rety.append(y)
+
+    return retx, rety
+
+
 def get_authors():
     past_events = find_events(ENTITY_ID)
     return list({e.author for e in past_events})
@@ -62,11 +72,12 @@ def get_data(ts=0):
         store_events(ENTITY_ID, new_events)
 
     # transformation for plotting
+    vecx, vecy = split_data(entity)
     return jsonify(
         {
             'data': {
-                'x': [x for x, y in sorted(entity.items())],
-                'y': [y for x, y in sorted(entity.items())]
+                'x': vecx,
+                'y': vecy
             },
             'times': get_times(),
             'authors': get_authors()
@@ -79,10 +90,12 @@ def get_data_by_author(author=ORIGIN.author):
     past_events = find_events(ENTITY_ID)
     entity = apply_events([e for e in past_events if e.author == author])
 
-    return jsonify(
-        {'x': [x for x, y in sorted(entity.items())],
-         'y': [y for x, y in sorted(entity.items())]
-         })
+    vecx, vecy = split_data(entity)
+    return jsonify({
+        "data": {'x': vecx,
+                 'y': vecy
+                 }
+    })
 
 
 @app.route('/', methods=['GET'])
