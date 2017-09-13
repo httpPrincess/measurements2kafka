@@ -4,7 +4,7 @@ import sys
 
 sys.path.append('../')
 from model.kafkaeventstore import store_events, find_events, initialize_store
-from model import Event, ORIGIN, generate_timestamp, generate_event, apply_events
+from model import Event, ORIGIN, generate_timestamp, apply_events, make_new_measurement
 
 app = Flask(__name__)
 Bootstrap(app)
@@ -48,6 +48,7 @@ def put_data():
 @app.route('/data/<int:ts>', methods=['GET'])
 def get_data(ts=0):
     past_events = find_events(ENTITY_ID)
+    app.logger.debug(past_events)
     # if ts available filter
     if ts != 0:
         past_events = [e for e in past_events if e.ts < ts]
@@ -56,15 +57,16 @@ def get_data(ts=0):
 
     # just for fun, by each retrieval we add a new Event
     if ts == 0:
-        new_event = generate_event(past_events[-1])
-        store_single_event(new_event)
+        new_events = make_new_measurement(entity)
+        entity = apply_events(new_events, entity)
+        store_events(ENTITY_ID, new_events)
 
     # transformation for plotting
     return jsonify(
         {
             'data': {
-                'x': [x for x, y in entity.items()],
-                'y': [y for x, y in entity.items()]
+                'x': [x for x, y in sorted(entity.items())],
+                'y': [y for x, y in sorted(entity.items())]
             },
             'times': get_times(),
             'authors': get_authors()
@@ -78,8 +80,8 @@ def get_data_by_author(author=ORIGIN.author):
     entity = apply_events([e for e in past_events if e.author == author])
 
     return jsonify(
-        {'x': [x for x, y in entity.items()],
-         'y': [y for x, y in entity.items()]
+        {'x': [x for x, y in sorted(entity.items())],
+         'y': [y for x, y in sorted(entity.items())]
          })
 
 

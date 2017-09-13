@@ -1,4 +1,4 @@
-from kafka import KafkaConsumer, KafkaProducer
+from kafka import KafkaConsumer
 
 
 def get_address():
@@ -9,35 +9,29 @@ def get_address():
 
 
 def get_consumer():
-    return KafkaConsumer(TOPIC, auto_offset_reset='earliest', bootstrap_servers=get_address())
+    return KafkaConsumer(TOPIC, auto_offset_reset='earliest', bootstrap_servers=get_address(), consumer_timeout_ms=100)
      # value_deserializer=lambda m: Event._make(json.loads(m.decode('ascii'))),
      # key_deserializer=deserializer, consumer_timeout_ms=100)
 
 
-def get_producer():
-    return KafkaProducer(bootstrap_servers=get_address())
-     # value_serializer=lambda m: json.dumps(m).encode('ascii'),
-     # key_serializer=lambda k: struct.pack('>I', k))
-
-
-CHUNK_SIZE = 1000
 TOPIC = 'filetopic'
 
-
-def get_chunk(fname, chunk_size=CHUNK_SIZE):
-    with open(fname, 'r+b') as f:
-        while True:
-            chunk = f.read(chunk_size)
-            if chunk:
-                yield chunk
-            else:
-                break
-
-
-producer = get_producer()
-fname = 'binary.oo'
+consumer = get_consumer()
 counter = 0
-for chunk in get_chunk(fname):
-    producer.send(TOPIC, key='%s.%d' % (fname, counter), value=chunk)
+current_fname = ''
+f = None
+for msg in consumer:
+    fname, ext, chunk_nr = msg.key.split('.')
+    fname = fname + ext
+    if fname != current_fname:
+        print('Got new file: %s' % fname)
+        current_fname = fname
+        if f:
+            f.close()
+        f = open('rcv'+current_fname, 'wb+')
 
-producer.flush()
+    f.write(msg.value)
+
+if f:
+    f.close()
+consumer.close()

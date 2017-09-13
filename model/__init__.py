@@ -44,12 +44,23 @@ def avg(aggregate):
     return y / len(aggregate)
 
 
-def apply_events(past_events):
+def apply_events(events, entity=None):
+
     result = dict()
-    for ev in past_events:
+    if entity:
+        result = entity.copy()
+
+    for ev in sorted(events, key=lambda ev: ev.ts):
         result[ev.x] = ev.y
 
     return result
+
+
+def make_new_measurement(entity):
+    last_element = sorted(entity)[-1]
+    # only x and y are used by the generator other values are set
+    new_event = generate_event(Event(author='jj', ts=0, x=last_element, y=entity[last_element]))
+    return [new_event]
 
 
 def workflow():
