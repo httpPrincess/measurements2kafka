@@ -3,13 +3,17 @@ from flask_bootstrap import Bootstrap
 import sys
 
 sys.path.append('../')
-from model.kafkaeventstore import store_events, find_events, initialize_store
+from model.kafkaeventstore import store_events, find_events, initialize_store, select_snapshot, find_with_offset, \
+    store_snapshot
 from model import Event, ORIGIN, generate_timestamp, apply_events, make_new_measurement
 
 app = Flask(__name__)
 Bootstrap(app)
 
 ENTITY_ID = 666
+# 30 seconds between snapshot
+SNAPSHOT_DELTA = 30000
+SNAPSHOT_OFFSET_DELTA = 10
 
 
 def update_values(x, y):
@@ -57,16 +61,30 @@ def put_data():
 @app.route('/data/', methods=['GET'])
 @app.route('/data/<int:ts>', methods=['GET'])
 def get_data(ts=0):
-    past_events = find_events(ENTITY_ID)
-    app.logger.debug(past_events)
-    # if ts available filter
-    if ts != 0:
-        past_events = [e for e in past_events if e.ts < ts]
+    generate_new = False
+    if ts == 0:
+        generate_new = True
+        ts = generate_timestamp()
 
-    entity = apply_events(past_events)
+    entity, offset = select_snapshot(entity_id=ENTITY_ID, ts=ts)
+    if entity:
+        print('Got snapshot')
+
+    past_events = sorted(find_with_offset(offset_low=offset), key=lambda e: e.value.ts)
+    past_events = [e for e in past_events if (e.value.ts < ts and e.key == ENTITY_ID)]
+
+    last_offset = past_events[-1].offset
+    last_ts = past_events[-1].value.ts
+    first_ts = past_events[0].value.ts
+
+    entity = apply_events([e.value for e in past_events], entity=entity)
+
+    if last_ts - first_ts > SNAPSHOT_DELTA:
+        print('Saving snapshot {} -- {}'.format(last_ts, ts))
+        store_snapshot(entity_id=ENTITY_ID, entity=entity, offset=last_offset, ts=last_ts)
 
     # just for fun, by each retrieval we add a new Event
-    if ts == 0:
+    if generate_new:
         new_events = make_new_measurement(entity)
         entity = apply_events(new_events, entity)
         store_events(ENTITY_ID, new_events)
