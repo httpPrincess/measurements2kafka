@@ -25,4 +25,4 @@ kafka:
       - zookeeper
 #    net: "host"
 #    volumes:
-#      - /mnt/kafka-data/:/var/lib/kafka/data/
+#      - /Users/jj/git/kafka2/experimentalsetup/data/:/var/lib/kafka/data/

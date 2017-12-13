@@ -21,7 +21,7 @@ class Test_Logic(TestCase):
         print paste_events
         self.assertEquals(len(paste_events), len(self.l1))
 
-        res = apply_events(past_events=paste_events)
+        res = apply_events(events=paste_events)
         self.assertEquals(len(res), len(self.l1))
 
     def test_sing(self):
@@ -29,6 +29,6 @@ class Test_Logic(TestCase):
         store_events(ENTITY_ID2, [ORIGIN])
         past_events = find_events(ENTITY_ID2)
 
-        res = apply_events(past_events=past_events)
+        res = apply_events(events=past_events)
         print res
         self.assertEquals(len(res), 1)

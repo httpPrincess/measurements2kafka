@@ -1,15 +1,33 @@
 zookeeper:
-  image: zookeeper
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=32181
+      - ZOOKEEPER_TICK_TIME=2000
+    ports:
+      - 32181:32181
+      - 2181:2181
+      - 2888:2888
+      - 3888:3888
 kafka:
-  image: confluent/kafka
-  links:
-     - zookeeper
+    image: confluentinc/cp-kafka:latest
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:32181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    hostname: "kafka"
+    ports:
+      - 9092:9092
+      - 29092:29092
+    links:
+      - zookeeper
 dashboard:
-  build: .
-  volumes:
+    build: .
+    dockerfile: dashboard/Dockerfile
+    volumes:
         - .:/app/
-  ports:
-    - 8080:8080
-  links:
-    - kafka
-    - zookeeper
+    ports:
+      - 8080:8080
+    links:
+      - kafka
+      - zookeeper

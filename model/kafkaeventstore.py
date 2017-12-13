@@ -25,11 +25,11 @@ def get_address():
 def get_consumer():
     return KafkaConsumer(bootstrap_servers=get_address(),
                          value_deserializer=lambda m: Event._make(json.loads(m.decode('ascii'))),
-                         key_deserializer=deserializer, consumer_timeout_ms=100)
+                         key_deserializer=deserializer, consumer_timeout_ms=1000)
 
 
 def get_producer():
-    return KafkaProducer(bootstrap_servers=get_address(),
+    return KafkaProducer(bootstrap_servers=get_address(), acks=1,
                          value_serializer=lambda m: json.dumps(m).encode('ascii'),
                          key_serializer=lambda k: struct.pack('>I', k))
 
@@ -55,8 +55,28 @@ def find_with_offset(offset_low=0, offset_high=-1):
     return filter(filter_function, consumer)
 
 
+def get_offsets(low, high_ts):
+    consumer = get_consumer()
+    partition = TopicPartition(topic=TOPIC, partition=PARTITION_NUMBER)
+    consumer.assign([partition])
+    consumer.seek(partition, low)
+
+    ret = list()
+    while True:
+        try:
+            ne = next(consumer)
+        except StopIteration:
+            break
+
+        ret.append(ne)
+        if ne.value.ts >= high_ts:
+            break
+
+    return ret
+
+
 def select_snapshot(entity_id, ts):
-    tab = sorted([m for m in snapshots.keys() if (m[0] == entity_id and m[1] < ts)], key=lambda a: a[1])
+    tab = sorted([m for m in snapshots.keys() if m[0] == entity_id and m[1] <= ts], key=lambda a: a[1])
     return snapshots[tab[-1]] if tab else ({}, 0)
 
 
@@ -67,10 +87,13 @@ def store_snapshot(entity_id, ts, entity, offset):
 def store_events(entity_id, events):
     producer = get_producer()
     for e in events:
-        producer.send(TOPIC, key=entity_id, value=e)
+        producer.send(TOPIC, key=entity_id, value=e, partition=PARTITION_NUMBER)
     producer.flush()
     producer.close()
 
 
 def initialize_store(entity_id, origin):
+    consumer = get_consumer()
+    if TOPIC in consumer.topics():
+        return
     store_events(entity_id, [origin])
