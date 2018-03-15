@@ -9,8 +9,7 @@ app = Flask(__name__)
 Bootstrap(app)
 
 ENTITY_ID = 666
-# 30 seconds between snapshot
-SNAPSHOT_TIME_DELTA = 3000
+SNAPSHOT_TIME_DELTA = 4000
 SNAPSHOT_OFFSET_DELTA = 5000
 GENERATOR_OPTION = True
 
@@ -124,12 +123,12 @@ def get_data(ts=0):
         store_events(ENTITY_ID, new_events)
 
     # transformation for plotting
-    x_vector, x_vector = split_data(entity)
+    x_vector, y_vector = split_data(entity)
     return jsonify(
         {
             'data': {
                 'x': x_vector,
-                'y': x_vector
+                'y': y_vector
             },
             'times': get_times(),
             'authors': get_authors()
@@ -156,4 +155,4 @@ def index():
     return render_template('dashboard.html')
 
 
-app.run(host='0.0.0.0', port=8080, debug=False)
+app.run(host='0.0.0.0', port=8080, debug=True)
